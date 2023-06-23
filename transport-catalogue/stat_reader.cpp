@@ -1,36 +1,36 @@
 #include "stat_reader.h"
 
 namespace Stats {
-	void Query_processing(TransportCatalogue& catalog, std::istream& input) {
+	void ExecuteQueries(TransportCatalogue& catalog, std::istream& input, std::ostream& out) {
 		int queries_number = 0;
 		input >> queries_number;
 		std::string text;
-		std::getline(input, text);//По какой то причине после того как считываю гетлайном количество команд, следующий гетлайн идет пустой
+		std::getline(input, text);//РџРѕ РєР°РєРѕР№ С‚Рѕ РїСЂРёС‡РёРЅРµ РїРѕСЃР»Рµ С‚РѕРіРѕ РєР°Рє СЃС‡РёС‚С‹РІР°СЋ РіРµС‚Р»Р°Р№РЅРѕРј РєРѕР»РёС‡РµСЃС‚РІРѕ РєРѕРјР°РЅРґ, СЃР»РµРґСѓСЋС‰РёР№ РіРµС‚Р»Р°Р№РЅ РёРґРµС‚ РїСѓСЃС‚РѕР№
 
 		for (int i = 0; i < queries_number; ++i) {
 			std::getline(input, text);
 			if (text.at(0) == 'S') {
-				Single_query_processingStop(catalog, text);
+				 ProcessStop(catalog, text, out);
 			}
 			else {
-				Single_query_processingBus(catalog, text);
+				ProcessBus(catalog, text, out);
 			}
 
 		}
 	}
 
-	void Single_query_processingBus(TransportCatalogue& catalog, std::string& text) {
+	void  ProcessBus(TransportCatalogue& catalog, std::string& text, std::ostream& out) {
 
-		std::string name = text.substr(text.find(' ') + 1);                       // Именя маршрута
-		if (!catalog.Bus_check(name)) {
-			std::cout << "Bus " << name << ": not found" << std::endl;
+		std::string name = text.substr(text.find(' ') + 1);                       // РРјРµРЅСЏ РјР°СЂС€СЂСѓС‚Р°
+		if (!catalog.HasBus(name)) {
+			out << "Bus " << name << ": not found" << std::endl;
 			return;
 		}
 
-		double distance = 0;                                                      // Общая географическая дистанция
-		double real_distance = 0;                                                 // Общая реальная длина
-		std::unordered_set <std::string_view> unique_stops;                       // Сет уникальных остановок
-		TransportCatalogue::Stop* prev_stop = catalog.GetBus(name).route.at(0);    // Предыдущая остановка
+		double distance = 0;                                                      // РћР±С‰Р°СЏ РіРµРѕРіСЂР°С„РёС‡РµСЃРєР°СЏ РґРёСЃС‚Р°РЅС†РёСЏ
+		double real_distance = 0;                                                 // РћР±С‰Р°СЏ СЂРµР°Р»СЊРЅР°СЏ РґР»РёРЅР°
+		std::unordered_set <std::string_view> unique_stops;                       // РЎРµС‚ СѓРЅРёРєР°Р»СЊРЅС‹С… РѕСЃС‚Р°РЅРѕРІРѕРє
+		TransportCatalogue::Stop* prev_stop = catalog.GetBus(name).route.at(0);    // РџСЂРµРґС‹РґСѓС‰Р°СЏ РѕСЃС‚Р°РЅРѕРІРєР°
 		bool flag = true;
 		for (auto& stop : catalog.GetBus(name).route) {
 			unique_stops.insert((*stop).name);
@@ -45,28 +45,28 @@ namespace Stats {
 
 		}
 
-		std::cout << "Bus " << name << ": " << catalog.GetBus(name).route.size() << " stops on route, " << unique_stops.size() << " unique stops, " << real_distance << " route length, " << real_distance / distance << " curvature" << std::endl;
+		out << "Bus " << name << ": " << catalog.GetBus(name).route.size() << " stops on route, " << unique_stops.size() << " unique stops, " << real_distance << " route length, " << real_distance / distance << " curvature" << std::endl;
 
 	}
 
 
-	void Single_query_processingStop(TransportCatalogue& catalog, std::string& text) {
+	void ProcessStop(TransportCatalogue& catalog, std::string& text, std::ostream& out) {
 		std::string name = text.substr(text.find(' ') + 1);
-		std::cout << "Stop " << name << ":";
+		out << "Stop " << name << ":";
 
-		if (!catalog.Stop_check(name)) {
-			std::cout << " not found" << std::endl;
+		if (!catalog.HasStop(name)) {
+			out << " not found" << std::endl;
 			return;
 		}
 		std::set<std::string_view> setbus = catalog.GetBuses(name);
 		if (setbus.size() == 0) {
-			std::cout << " no buses" << std::endl;
+			out << " no buses" << std::endl;
 			return;
 		}
-		std::cout << " buses";
+		out << " buses";
 		for (auto& bus : setbus) {
 			std::cout << " " << bus;
 		}
-		std::cout << std::endl;
+		out << std::endl;
 	}
 }//namespace Stats

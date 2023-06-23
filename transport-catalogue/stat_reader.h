@@ -6,10 +6,10 @@
 
 #include "geo.h"
 #include "transport_catalogue.h"
+namespace Stats {
+	void ExecuteQueries(TransportCatalogue& catalog, std::istream& input, std::ostream& out);
 
-void Query_processing (TransportCatalogue& catalog, std::istream& input);
+	void ProcessBus(TransportCatalogue& catalog, std::string& text, std::ostream& out);
 
-void Single_query_processingBus(TransportCatalogue& catalog, std::string& text);
-
-void Single_query_processingStop(TransportCatalogue& catalog, std::string& text);
-
+	void ProcessStop(TransportCatalogue& catalog, std::string& text, std::ostream& out);
+}//namespace Stats
