@@ -18,7 +18,7 @@
 
 namespace renderer {
 
-    struct Rendersettings {    // Настройки графического отображения карты
+    struct RenderSettings {    // Настройки графического отображения карты
   
         svg::Point size; //double width = 0.0; double height = 0.0;
 
@@ -119,30 +119,20 @@ namespace renderer {
 	
 }//namespace renderer
 
-//------------------------------------------------------------Graphic processing--------------------------------------------------------------------
+class MapRenderer {
+public:
+    MapRenderer(const json::Node& data);
 
-namespace rendermap {
-	using namespace renderer;
+    void Draw(TransportCatalogue& catalog, renderer::RenderSettings& settings, std::ostream& out, renderer::SphereProjector& proj);
 
-	svg::Point LoadOffset(const std::vector<json::Node>& data);
+private:
+    const json::Node& data_;
+    
+    void DrawLine(svg::Document& doc, renderer::RenderSettings& settings, renderer::SphereProjector& proj, int color, const std::vector<Stop*>& route);
 
-	svg::Color LoadColor(const json::Node& data);
+    void DrawBusname(TransportCatalogue& catalog, const std::string& busname, svg::Document& doc, renderer::RenderSettings& settings, renderer::SphereProjector& proj, int color);
 
+    void DrawStops(svg::Document& doc, const geo::Coordinates& coordinates, renderer::SphereProjector& proj, renderer::RenderSettings& settings);
 
-	Rendersettings LoadSettings(const json::Node& data);
-
-	SphereProjector SetProjector(TransportCatalogue& catalog, renderer::Rendersettings& settings);
-
-
-	void DrawLine(svg::Document& doc, renderer::Rendersettings& settings, renderer::SphereProjector& proj, int color, const std::vector<Stop*>& route);
-
-	void DrawBusname(TransportCatalogue& catalog, const std::string& busname, svg::Document& doc, renderer::Rendersettings& settings, renderer::SphereProjector& proj, int color);
-
-    void DrawStops(svg::Document& doc, const geo::Coordinates& coordinates, renderer::SphereProjector& proj, renderer::Rendersettings& settings);
-
-    void DrawStopName(svg::Document& doc, const geo::Coordinates& coordinates, renderer::Rendersettings& settings, renderer::SphereProjector& proj, const std::string& stopname);
-
-    void Draw(TransportCatalogue& catalog, renderer::Rendersettings& settings, std::ostream& out, renderer::SphereProjector& proj);
-
-    void ProcessGraphic(TransportCatalogue& catalog, const json::Node& data, std::ostringstream& out);
-}
+    void DrawStopName(svg::Document& doc, const geo::Coordinates& coordinates, renderer::RenderSettings& settings, renderer::SphereProjector& proj, const std::string& stopname);
+};

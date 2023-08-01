@@ -15,9 +15,9 @@
 #include "svg.h"
 #include "map_renderer.h"
 
-class Reader {
+class JSONReader {
 public:
-	explicit Reader(const json::Node& data);
+	explicit JSONReader(const json::Node& data);
 
 	void LoadData();
 	void ProcessQuery(std::ostream& out);
@@ -33,6 +33,10 @@ private:
 	void ProcessStop(std::map<std::string, json::Node>& answer, const json::Node& request);
 	void ProcessMap(std::map<std::string, json::Node>& answer, const json::Node& request);
 
+	renderer::RenderSettings LoadSettings(const json::Node& data);
+	renderer::SphereProjector SetProjector(TransportCatalogue& catalog, renderer::RenderSettings& settings);
+	svg::Color LoadColor(const json::Node& data);
+	svg::Point LoadOffset(const std::vector<json::Node>& data);
 };
 
 

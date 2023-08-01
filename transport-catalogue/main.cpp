@@ -29,7 +29,7 @@ void Reader_test() {
     json::Document doc = Load(ifile);
 
     TransportCatalogue catalogue;
-    Reader reader(doc.GetRoot());
+    JSONReader reader(doc.GetRoot());
     reader.LoadData();
 
     std::ofstream ofile("otest.txt");
@@ -43,7 +43,7 @@ int main() {
 
     json::Document doc = Load(std::cin);
     TransportCatalogue catalogue;
-    Reader reader(doc.GetRoot());
+    JSONReader reader(doc.GetRoot());
     reader.LoadData();
     reader.ProcessQuery(std::cout);
 
