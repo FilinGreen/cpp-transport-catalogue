@@ -15,50 +15,25 @@
 #include "svg.h"
 #include "map_renderer.h"
 
-namespace Input {
-	void LoadTC(TransportCatalogue& result, std::istream& input);
+class Reader {
+public:
+	explicit Reader(const json::Node& data);
 
-	std::vector<std::string> SplitInToWordsStop(std::string& text);
+	void LoadData();
+	void ProcessQuery(std::ostream& out);
 
-	std::vector<std::string> SplitIntoWordsBus(std::string& text, char lit);
+private:
+	const json::Node& data_;
+	TransportCatalogue catalog_;
+	//--------------------private functions
+	void LoadStops(const json::Node& base_data);
+	void LoadBuses(const json::Node& base_data);
 
-	void AddStop(TransportCatalogue& catalog, std::string& text);
+	void ProcessBus(std::map<std::string, json::Node>& answer, const json::Node& request);
+	void ProcessStop(std::map<std::string, json::Node>& answer, const json::Node& request);
+	void ProcessMap(std::map<std::string, json::Node>& answer, const json::Node& request);
 
-	void AddBus(TransportCatalogue& catalog, std::string& text);
-}//namespace Input
-
-//-----------------------------------------Stats-----------------------------------------------------------------------
-
-namespace Stats {
-	void ExecuteQueries(TransportCatalogue& catalog, std::istream& input, std::ostream& out);//
-
-	void ProcessBus(TransportCatalogue& catalog, std::string& text, std::ostream& out);
-
-	void ProcessStop(TransportCatalogue& catalog, std::string& text, std::ostream& out);
-}//namespace Stats
+};
 
 
 
-namespace Reader {
-
-	void LoadStops(TransportCatalogue& catalog, json::Node base_data);
-	void LoadBuses(TransportCatalogue& catalog, json::Node base_data);
-	void LoadData(TransportCatalogue& catalog, json::Node data);
-
-	void BusProcessing(TransportCatalogue& catalog, std::map<std::string, json::Node>& answer, json::Node request);
-	void StopProcessing(TransportCatalogue& catalog, std::map<std::string, json::Node>& answer, json::Node request);
-	void MapProcessing(TransportCatalogue& catalog, std::map<std::string, json::Node>& answer, json::Node request, json::Node data);
-	void QueryProcessing(TransportCatalogue& catalog, json::Node data, std::ostream& out);
-
-	svg::Point LoadOffset(std::vector<json::Node> data);
-	svg::Color LoadColor(json::Node data);
-	renderer::Render_settings LoadSettings(json::Node data);
-	renderer::SphereProjector SetProjector(TransportCatalogue& catalog, renderer::Render_settings& settings);
-
-	void DrowLine(svg::Document& doc, renderer::Render_settings& settings, renderer::SphereProjector& proj, int color, std::vector<Stop*>& route);
-	void DrowBusname(TransportCatalogue& catalog, std::string busname, svg::Document& doc, renderer::Render_settings& settings, renderer::SphereProjector& proj, int color);
-	void DrowStopName(svg::Document& doc, geo::Coordinates coordinates, renderer::Render_settings& settings, renderer::SphereProjector& proj, std::string stopname);
-	void DrowStops(svg::Document& doc, geo::Coordinates coordinates, renderer::SphereProjector& proj, renderer::Render_settings& settings);
-	void Drow(TransportCatalogue& catalog, renderer::Render_settings& settings, std::ostream& out, renderer::SphereProjector& proj);
-	void GraphicProcessing(TransportCatalogue& catalog, json::Node data, std::ostringstream& out);
-}//namespace Reader

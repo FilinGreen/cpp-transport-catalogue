@@ -1,17 +1,24 @@
 #pragma once
 
-#include "geo.h"
-#include "svg.h"
-
+#include <sstream>
 #include <algorithm>
 #include <cstdlib>
 #include <iostream>
 #include <optional>
 #include <vector>
 
+#include "geo.h"
+#include "svg.h"
+#include "json.h"
+#include "transport_catalogue.h"
+
+
+
+
+
 namespace renderer {
 
-    struct Render_settings {    // Настройки графического отображения карты
+    struct Rendersettings {    // Настройки графического отображения карты
   
         svg::Point size; //double width = 0.0; double height = 0.0;
 
@@ -37,7 +44,7 @@ namespace renderer {
         bool IsZero(double value) {
             return std::abs(value) < EPSILON;
         }
-    }//namespace 
+	}//namespace 
 
     class SphereProjector { 
     public:
@@ -108,8 +115,34 @@ namespace renderer {
         double zoom_coeff_ = 0;
     };
 
-    
-}//namespace Renderer
+	
+	
+}//namespace renderer
+
+//------------------------------------------------------------Graphic processing--------------------------------------------------------------------
+
+namespace rendermap {
+	using namespace renderer;
+
+	svg::Point LoadOffset(const std::vector<json::Node>& data);
+
+	svg::Color LoadColor(const json::Node& data);
 
 
+	Rendersettings LoadSettings(const json::Node& data);
 
+	SphereProjector SetProjector(TransportCatalogue& catalog, renderer::Rendersettings& settings);
+
+
+	void DrawLine(svg::Document& doc, renderer::Rendersettings& settings, renderer::SphereProjector& proj, int color, const std::vector<Stop*>& route);
+
+	void DrawBusname(TransportCatalogue& catalog, const std::string& busname, svg::Document& doc, renderer::Rendersettings& settings, renderer::SphereProjector& proj, int color);
+
+    void DrawStops(svg::Document& doc, const geo::Coordinates& coordinates, renderer::SphereProjector& proj, renderer::Rendersettings& settings);
+
+    void DrawStopName(svg::Document& doc, const geo::Coordinates& coordinates, renderer::Rendersettings& settings, renderer::SphereProjector& proj, const std::string& stopname);
+
+    void Draw(TransportCatalogue& catalog, renderer::Rendersettings& settings, std::ostream& out, renderer::SphereProjector& proj);
+
+    void ProcessGraphic(TransportCatalogue& catalog, const json::Node& data, std::ostringstream& out);
+}
