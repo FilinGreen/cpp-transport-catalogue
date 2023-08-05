@@ -15,7 +15,6 @@
 #include "domain.h"
 #include "json.h"
 
-
 class TransportCatalogue {
 public:
 

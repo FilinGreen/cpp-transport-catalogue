@@ -1,4 +1,5 @@
 #include "stat_reader.h"
+#include "domain.h"
 
 namespace Stats {
 	void ExecuteQueries(TransportCatalogue& catalog, std::istream& input, std::ostream& out) {
@@ -30,7 +31,7 @@ namespace Stats {
 		double distance = 0;                                                      // Общая географическая дистанция
 		double real_distance = 0;                                                 // Общая реальная длина
 		std::unordered_set <std::string_view> unique_stops;                       // Сет уникальных остановок
-		TransportCatalogue::Stop* prev_stop = catalog.GetBus(name).route.at(0);    // Предыдущая остановка
+		Stop* prev_stop = catalog.GetBus(name).route.at(0);    // Предыдущая остановка
 		bool flag = true;
 		for (auto& stop : catalog.GetBus(name).route) {
 			unique_stops.insert((*stop).name);
@@ -39,7 +40,7 @@ namespace Stats {
 
 				continue;
 			}
-			distance += ComputeDistance({ (*prev_stop).x,(*prev_stop).y }, { (*stop).x,(*stop).y });
+			distance += geo::ComputeDistance({ (*prev_stop).x,(*prev_stop).y }, { (*stop).x,(*stop).y });
 			real_distance += catalog.GetDistance(prev_stop, stop);
 			prev_stop = stop;
 

@@ -51,7 +51,6 @@ void MapRenderer::Draw(TransportCatalogue& catalog, renderer::RenderSettings& se
 	}
 
 	doc.Render(out);
-
 }
 
 void MapRenderer::DrawLine(svg::Document& doc, renderer::RenderSettings& settings, renderer::SphereProjector& proj, int color, const std::vector<Stop*>& route) {

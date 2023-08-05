@@ -1,6 +1,6 @@
 #include "transport_catalogue.h"
 
-void TransportCatalogue::AddStop(const std::string& name, double x, double y ) { //Добавление остановки
+void TransportCatalogue::AddStop(const std::string& name, double x, double y ) { //Р”РѕР±Р°РІР»РµРЅРёРµ РѕСЃС‚Р°РЅРѕРІРєРё
 	if (stopname_to_stop_.count(name) == 0) {
 		stops_.push_back({name,x,y });
 		stopname_to_stop_[stops_.back().name] = &stops_.back();
@@ -12,7 +12,7 @@ void TransportCatalogue::AddStop(const std::string& name, double x, double y ) {
 	}
 }
 
-void TransportCatalogue::AddBus(const std::string& name, const std::vector < std::string>& route) { //Добавление маршрута
+void TransportCatalogue::AddBus(const std::string& name, const std::vector < std::string>& route) { //Р”РѕР±Р°РІР»РµРЅРёРµ РјР°СЂС€СЂСѓС‚Р°
 	std::vector <Stop*> stops;
 	stops.reserve(route.size());
 
@@ -28,47 +28,47 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector < std
 	}
 }
 
-void TransportCatalogue::AddBus(const std::string& name, const std::vector <std::string>& route, bool circle) { //Добавление маршрута с указанием {кольцевой/не кольцевой}
+void TransportCatalogue::AddBus(const std::string& name, const std::vector <std::string>& route, bool circle) { //Р”РѕР±Р°РІР»РµРЅРёРµ РјР°СЂС€СЂСѓС‚Р° СЃ СѓРєР°Р·Р°РЅРёРµРј {РєРѕР»СЊС†РµРІРѕР№/РЅРµ РєРѕР»СЊС†РµРІРѕР№}
 	AddBus(name, route);
 	buses_.back().circle = circle;
 }
 
-Bus& TransportCatalogue::GetBus(const std::string& name) { //Получение маршрута
+Bus& TransportCatalogue::GetBus(const std::string& name) { //РџРѕР»СѓС‡РµРЅРёРµ РјР°СЂС€СЂСѓС‚Р°
 	return *busname_to_bus_.at(name);
 }
 
-Stop& TransportCatalogue::GetStop(const std::string& name) { //Получение остановки
+Stop& TransportCatalogue::GetStop(const std::string& name) { //РџРѕР»СѓС‡РµРЅРёРµ РѕСЃС‚Р°РЅРѕРІРєРё
 	return *stopname_to_stop_.at(name);
 }
 
-std::deque <Bus>& TransportCatalogue::GetBuses() { //Получение списка маршрутов
+std::deque <Bus>& TransportCatalogue::GetBuses() { //РџРѕР»СѓС‡РµРЅРёРµ СЃРїРёСЃРєР° РјР°СЂС€СЂСѓС‚РѕРІ
 	return buses_;
 }
 
-std::deque <Stop>& TransportCatalogue::GetStops() { //Получение списка остановок
+std::deque <Stop>& TransportCatalogue::GetStops() { //РџРѕР»СѓС‡РµРЅРёРµ СЃРїРёСЃРєР° РѕСЃС‚Р°РЅРѕРІРѕРє
 	return stops_;
 }
 
-bool TransportCatalogue::HasBusAtStop(const std::string& name) { //Проверка наличия маршрутов на остановке
+bool TransportCatalogue::HasBusAtStop(const std::string& name) { //РџСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РјР°СЂС€СЂСѓС‚РѕРІ РЅР° РѕСЃС‚Р°РЅРѕРІРєРµ
 	return stopname_to_buses_.at(name).size() != 0;
 }
 
-bool TransportCatalogue::HasBus(const std::string& name) { //Проверка наличия маршрута
+bool TransportCatalogue::HasBus(const std::string& name) { //РџСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РјР°СЂС€СЂСѓС‚Р°
 	return busname_to_bus_.count(name)!=0;
 }
 
-bool TransportCatalogue::HasStop(const std::string& name) { //Проверка наличия остановки
+bool TransportCatalogue::HasStop(const std::string& name) { //РџСЂРѕРІРµСЂРєР° РЅР°Р»РёС‡РёСЏ РѕСЃС‚Р°РЅРѕРІРєРё
 	return stopname_to_stop_.count(name) != 0;
 }
 
-bool TransportCatalogue::IsCircle(const std::string& name) { //Проверка является ли маршрут кольцевым
+bool TransportCatalogue::IsCircle(const std::string& name) { //РџСЂРѕРІРµСЂРєР° СЏРІР»СЏРµС‚СЃСЏ Р»Рё РјР°СЂС€СЂСѓС‚ РєРѕР»СЊС†РµРІС‹Рј
 	return GetBus(name).circle;
 }
-std::set<std::string_view>& TransportCatalogue::GetBuses(const std::string& name) { //Получение списка маршрутов остановки
+std::set<std::string_view>& TransportCatalogue::GetBuses(const std::string& name) { //РџРѕР»СѓС‡РµРЅРёРµ СЃРїРёСЃРєР° РјР°СЂС€СЂСѓС‚РѕРІ РѕСЃС‚Р°РЅРѕРІРєРё
 	return stopname_to_buses_.at(name);
 }
 
-void TransportCatalogue::AddDistance(const std::string& stop1, const std::string& stop2, double distance) { //Добавление дистанций между остановками
+void TransportCatalogue::AddDistance(const std::string& stop1, const std::string& stop2, double distance) { //Р”РѕР±Р°РІР»РµРЅРёРµ РґРёСЃС‚Р°РЅС†РёР№ РјРµР¶РґСѓ РѕСЃС‚Р°РЅРѕРІРєР°РјРё
 	
 	if (stopname_to_stop_.count(stop2) == 0) {
 		std::string stop2copy = stop2;
@@ -80,7 +80,7 @@ void TransportCatalogue::AddDistance(const std::string& stop1, const std::string
 	}
 }
 
-double TransportCatalogue::GetDistance(Stop* stop1, Stop* stop2) { //Получение дистанции между остановками
+double TransportCatalogue::GetDistance(Stop* stop1, Stop* stop2) { //РџРѕР»СѓС‡РµРЅРёРµ РґРёСЃС‚Р°РЅС†РёРё РјРµР¶РґСѓ РѕСЃС‚Р°РЅРѕРІРєР°РјРё
 	if(real_distance_.count({ stop1,stop2 })!=0){
 		return real_distance_.at({ stop1,stop2 });
 	}

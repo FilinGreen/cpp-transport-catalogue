@@ -14,6 +14,7 @@
 #include "json.h"
 #include "svg.h"
 #include "map_renderer.h"
+#include "json_builder.h"
 
 class JSONReader {
 public:
@@ -29,9 +30,9 @@ private:
 	void LoadStops(const json::Node& base_data);
 	void LoadBuses(const json::Node& base_data);
 
-	void ProcessBus(std::map<std::string, json::Node>& answer, const json::Node& request);
-	void ProcessStop(std::map<std::string, json::Node>& answer, const json::Node& request);
-	void ProcessMap(std::map<std::string, json::Node>& answer, const json::Node& request);
+	void ProcessBus(json::Builder& builder, const json::Node& request);
+	void ProcessStop(json::Builder& builder, const json::Node& request);
+	void ProcessMap(json::Builder& builder, const json::Node& request);
 
 	renderer::RenderSettings LoadSettings(const json::Node& data);
 	renderer::SphereProjector SetProjector(TransportCatalogue& catalog, renderer::RenderSettings& settings);

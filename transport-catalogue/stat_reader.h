@@ -6,6 +6,7 @@
 
 #include "geo.h"
 #include "transport_catalogue.h"
+
 namespace Stats {
 	void ExecuteQueries(TransportCatalogue& catalog, std::istream& input, std::ostream& out);
 

@@ -14,8 +14,6 @@
 
 
 
-
-
 namespace renderer {
 
     struct RenderSettings {    // Настройки графического отображения карты
@@ -114,8 +112,6 @@ namespace renderer {
         double max_lat_ = 0;
         double zoom_coeff_ = 0;
     };
-
-	
 	
 }//namespace renderer
 

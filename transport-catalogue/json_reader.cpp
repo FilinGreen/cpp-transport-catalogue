@@ -1,56 +1,55 @@
 #include "json_reader.h"
 
-
-
-
 JSONReader::JSONReader(const json::Node& data) :
 	data_(data) {}
 
 void JSONReader::LoadData() {
-	json::Node base_data = (data_.AsMap()).at("base_requests");
+	json::Node base_data = (data_.AsDict()).at("base_requests");
 
 	LoadStops(base_data);
 	LoadBuses(base_data);
 }
+
 void JSONReader::ProcessQuery(std::ostream& out) {
-	json::Node requests_data = (data_.AsMap()).at("stat_requests");
+	json::Node requests_data = (data_.AsDict()).at("stat_requests");
 
-	std::vector<json::Node> result;                                                     // Контейнер обработки запросов
+	json::Builder builder {};                                    //Обработчик вывода ответов
+	builder.StartArray();
 
-	for (json::Node request : requests_data.AsArray()) {                                // Проходим по всем запросам
-		std::map<std::string, json::Node> answer;
+	for (json::Node request : requests_data.AsArray()) {         // Проходим по всем запросам
 
-		if (((request.AsMap()).at("type")).AsString() == "Bus") {
-			ProcessBus(answer, request);
+		if (((request.AsDict()).at("type")).AsString() == "Bus") {
+			ProcessBus(builder, request);
 		}
-		else if (((request.AsMap()).at("type")).AsString() == "Stop") {
-			ProcessStop(answer, request);
+		else if (((request.AsDict()).at("type")).AsString() == "Stop") {
+			ProcessStop(builder, request);
 		}
 		else {
-			ProcessMap(answer, request);
+			ProcessMap(builder, request);
 		}
-
-		result.push_back(answer);                                                        // Добавляем ответ на запрос в контейнер
+                                                  
 	}//for
+	builder.EndArray();
 
-	json::Print(json::Document{std::move(result)}, out);                                 // Выводим ответы в поток вывода out
+	json::Print(json::Document{std::move(builder.Build())}, out);                                 // Выводим ответы в поток вывода out
 }
 
 void JSONReader::LoadStops(const json::Node& base_data) {
 	for (json::Node stop_data : base_data.AsArray()) {                                                       //Пробегаемся по контейнеру заполнения базы
-		auto mapa = stop_data.AsMap();
+		auto mapa = stop_data.AsDict();
 		if (((mapa.at("type")).AsString()) == "Stop") {                                                      //Проверяем что элемент является остановкой
 			std::string stopname = (mapa.at("name")).AsString();                                             //Имя остановки
 			catalog_.AddStop(stopname, (mapa.at("latitude")).AsDouble(), (mapa.at("longitude")).AsDouble()); //Добавляем остановку
-			for (auto [name, distance] : (mapa.at("road_distances")).AsMap()) {                              //Добавляем дистанции
+			for (auto [name, distance] : (mapa.at("road_distances")).AsDict()) {                             //Добавляем дистанции
 				catalog_.AddDistance(stopname, name, distance.AsDouble());
 			}
 		}
 	}
 }
+
 void JSONReader::LoadBuses(const json::Node& base_data) {
 	for (json::Node stop_data : base_data.AsArray()) {                 //Пробегаем по контейнеру заполнения базы
-		auto mapa = stop_data.AsMap();
+		auto mapa = stop_data.AsDict();
 		if (((mapa.at("type")).AsString()) == "Bus") {                 //Проверяем что элемент является маршрутом/автобусом
 			std::vector<std::string> bus_stops;
 			bus_stops.reserve(((mapa.at("stops")).AsArray()).size());
@@ -75,12 +74,17 @@ void JSONReader::LoadBuses(const json::Node& base_data) {
 	}
 }
 
-void JSONReader::ProcessBus(std::map<std::string, json::Node>& answer, const json::Node& request) {
-	std::string bus_name = ((request.AsMap()).at("name")).AsString();
+void JSONReader::ProcessBus(json::Builder& builder, const json::Node& request) {
+	std::string bus_name = ((request.AsDict()).at("name")).AsString();
+
+	builder.StartDict();
 
 	if (!catalog_.HasBus(bus_name)) {                                // Проверка наличия маршрута в каталоге
-		answer["request_id"] = (request.AsMap()).at("id");
-		answer["error_message"] = "not found";
+
+		builder.Key("request_id").Value((request.AsDict()).at("id").AsInt());
+		builder.Key("error_message").Value("not found");
+		builder.EndDict();
+		
 		return;
 	}
 
@@ -104,18 +108,28 @@ void JSONReader::ProcessBus(std::map<std::string, json::Node>& answer, const jso
 	}//for
 
 	//Добавление данных в файл ответа
-	answer["request_id"] = (request.AsMap()).at("id");
-	answer["stop_count"] = static_cast<int>((catalog_.GetBus(bus_name).route).size());
-	answer["curvature"] = route_lenght / geo_distance;
-	answer["route_length"] = route_lenght;
-	answer["unique_stop_count"] = static_cast<int>(unique_stops.size());
+
+	
+	builder.Key("request_id").Value((request.AsDict()).at("id").AsInt());
+	builder.Key("stop_count").Value(static_cast<int>((catalog_.GetBus(bus_name).route).size()));
+	builder.Key("curvature").Value(route_lenght / geo_distance);
+	builder.Key("route_length").Value(route_lenght);
+	builder.Key("unique_stop_count").Value(static_cast<int>(unique_stops.size()));
+
+	builder.EndDict();
 }
-void JSONReader::ProcessStop(std::map<std::string, json::Node>& answer, const json::Node& request) {
-	std::string stop_name = ((request.AsMap()).at("name")).AsString(); // Имя остановки
+
+void JSONReader::ProcessStop(json::Builder& builder, const json::Node& request) {
+	std::string stop_name = ((request.AsDict()).at("name")).AsString(); // Имя остановки
+
+	builder.StartDict();
 
 	if (!catalog_.HasStop(stop_name)) {                                 // Проверка что остановка существует
-		answer["request_id"] = (request.AsMap()).at("id");
-		answer["error_message"] = "not found";
+
+		builder.Key("request_id").Value((request.AsDict()).at("id").AsInt());
+		builder.Key("error_message").Value("not found");
+
+		builder.EndDict();
 		return;
 	}
 
@@ -125,10 +139,12 @@ void JSONReader::ProcessStop(std::map<std::string, json::Node>& answer, const js
 
 	for (std::string_view bus : buses) {
 		sbuses.push_back(std::string(bus));
-	}
+	}                                         
 
-	answer["request_id"] = (request.AsMap()).at("id");                 // Добавление id запроса в файл ответа
-	answer["buses"] = sbuses;                                          // Добавлениеконтейнера маршрутов в файл ответа
+	builder.Key("request_id").Value((request.AsDict()).at("id").AsInt());// Добавление id запроса в файл ответа
+	builder.Key("buses").Value(sbuses);                                  // Добавлениеконтейнера маршрутов в файл ответа
+
+	builder.EndDict();
 }
 
 renderer::SphereProjector JSONReader::SetProjector(TransportCatalogue& catalog, renderer::RenderSettings& settings) { // Задаем класс смещения
@@ -143,10 +159,10 @@ renderer::SphereProjector JSONReader::SetProjector(TransportCatalogue& catalog, 
 }
 
 renderer::RenderSettings JSONReader::LoadSettings(const json::Node& data) { // Загрузка настроек отображения карты
-	json::Node graphic_data = (data.AsMap()).at("render_settings");
+	json::Node graphic_data = (data.AsDict()).at("render_settings");
 
 	renderer::RenderSettings settings;
-	std::map<std::string, json::Node> sets = graphic_data.AsMap();
+	std::map<std::string, json::Node> sets = graphic_data.AsDict();
 	settings.size.x = (sets.at("width")).AsDouble();
 	settings.size.y = (sets.at("height")).AsDouble();
 	settings.padding = (sets.at("padding")).AsDouble();
@@ -200,7 +216,7 @@ svg::Point JSONReader::LoadOffset(const std::vector<json::Node>& data) { //За�
 	return result;
 }
 
-void JSONReader::ProcessMap(std::map<std::string, json::Node>& answer, const json::Node& request) {
+void JSONReader::ProcessMap(json::Builder& builder, const json::Node& request) {
 	
 	renderer::RenderSettings settings = LoadSettings(data_);
 	renderer::SphereProjector proj = SetProjector(catalog_,settings);
@@ -208,9 +224,14 @@ void JSONReader::ProcessMap(std::map<std::string, json::Node>& answer, const jso
 	std::ostringstream sout;                                  // Определение потока вывода
 	MapRenderer maprender(data_);
 	maprender.Draw(catalog_, settings, sout, proj);                           // Отрисовка карты и вывод svg файла в поток вывода          
+   
 
-	answer["map"] = sout.str();                               // Добавление карты в файл ответа
-	answer["request_id"] = (request.AsMap()).at("id");        // Добавление id запроса в файл ответа
+	builder.StartDict();
+
+	builder.Key("map").Value(sout.str());                                // Добавление карты в файл ответа
+	builder.Key("request_id").Value((request.AsDict()).at("id").AsInt());// Добавление id запроса в файл ответа
+
+	builder.EndDict();
 }
 
 
