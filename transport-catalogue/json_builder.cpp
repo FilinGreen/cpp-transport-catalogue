@@ -3,9 +3,7 @@
 
 
 namespace json {
-	//std::vector<Node*> nodes_stack_;
-    //using Dict = std::map<std::string, Node>;
-    //using Array = std::vector<Node>;
+
 	
 //------------------------------------------------Context------------------------------------------------
 	BaseContext::BaseContext(Builder& builder) :base(builder) {}
@@ -40,7 +38,7 @@ namespace json {
 
 	//----------------KeyValueContext--------
 
-	KeyValueContext KeyItemContext::Value(Node::Value value) {//Зацикливание-----------------------------------------------
+	KeyValueContext KeyItemContext::Value(Node::Value value) {
 		return BaseContext(BaseContext::Value(std::move(value)));
 	}
 	

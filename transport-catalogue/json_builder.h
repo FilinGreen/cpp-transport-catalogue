@@ -32,7 +32,7 @@ namespace json {
 		BaseContext(Builder& builder);
 		
 		KeyItemContext Key(std::string);
-		Builder& Value(Node::Value);//<--------------
+		Builder& Value(Node::Value);
 		DictItemContext StartDict();
 		ArrayItemContext StartArray();
 		Builder& EndDict();

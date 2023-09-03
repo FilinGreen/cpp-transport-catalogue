@@ -2,17 +2,24 @@
 
 void TransportCatalogue::AddStop(const std::string& name, double x, double y ) { //Добавление остановки
 	if (stopname_to_stop_.count(name) == 0) {
-		stops_.push_back({name,x,y });
+		stops_.push_back({name,x,y,stop_number_++});
 		stopname_to_stop_[stops_.back().name] = &stops_.back();
 		stopname_to_buses_[stops_.back().name];
+		stopid_to_stopname_[stops_.back().stop_id] = stops_.back().name;
 	}
 	else {
 		stopname_to_stop_.at(name)->x = x;
 		stopname_to_stop_.at(name)->y = y;
 	}
+
 }
 
-void TransportCatalogue::AddBus(const std::string& name, const std::vector < std::string>& route) { //Добавление маршрута
+std::string_view TransportCatalogue::GetStopNameById(size_t id) {
+		return stopid_to_stopname_.at(id);
+}
+
+void TransportCatalogue::AddBus(const std::string& name, const std::vector <std::string>& route, bool circle, int bus_wait_time, double bus_velocity) { //Добавление маршрута 
+
 	std::vector <Stop*> stops;
 	stops.reserve(route.size());
 
@@ -20,7 +27,7 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector < std
 		stops.push_back(stopname_to_stop_.at(stopname));
 	}
 
-	buses_.push_back({name, stops });
+	buses_.push_back({ name, stops, circle, bus_wait_time, bus_velocity });
 	busname_to_bus_[buses_.back().name] = &buses_.back();
 
 	for (const auto& stop : buses_.back().route) {
@@ -28,9 +35,9 @@ void TransportCatalogue::AddBus(const std::string& name, const std::vector < std
 	}
 }
 
-void TransportCatalogue::AddBus(const std::string& name, const std::vector <std::string>& route, bool circle) { //Добавление маршрута с указанием {кольцевой/не кольцевой}
-	AddBus(name, route);
-	buses_.back().circle = circle;
+
+size_t TransportCatalogue::GetStopsCount() {
+	return stops_.size();
 }
 
 Bus& TransportCatalogue::GetBus(const std::string& name) { //Получение маршрута
@@ -84,8 +91,18 @@ double TransportCatalogue::GetDistance(Stop* stop1, Stop* stop2) { //Получ�
 	if(real_distance_.count({ stop1,stop2 })!=0){
 		return real_distance_.at({ stop1,stop2 });
 	}
-	else {
+	else if (real_distance_.count({ stop2,stop1 }) != 0) {
 		return real_distance_.at({ stop2,stop1 });
 	}
 	
+	return 0;
+}
+
+double TransportCatalogue::GetDistanceEdge(Stop* stop1, Stop* stop2) { //Получение дистанции между остановками
+	if (real_distance_.count({ stop1,stop2 }) != 0) {
+		return real_distance_.at({ stop1,stop2 });
+	}
+	else{
+		return 0;
+	}
 }

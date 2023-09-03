@@ -31,10 +31,10 @@ void Reader_test() {
 
     json::Document doc = Load(ifile);
 
-    TransportCatalogue catalogue;
+    //TransportCatalogue catalogue;
     JSONReader reader(doc.GetRoot());
-    reader.LoadData();
 
+    reader.LoadData();
     std::ofstream ofile("otest.txt");
     reader.ProcessQuery(std::cout);
 
@@ -92,17 +92,24 @@ void Test() {
     PrintTest();
     Reader_test();
     ErrorTest();
+    cout << "----------------------Tests is complete----------------------" << endl;
+    
 }
-int main() {
-   // Test();
 
+void DoTheJob() {
     json::Document doc = Load(cin);
 
-    TransportCatalogue catalogue;
+    //TransportCatalogue catalogue;
     JSONReader reader(doc.GetRoot());
-    reader.LoadData();
 
+    reader.LoadData();
+   // reader.MakeGraph();
     reader.ProcessQuery(cout);
+}
+int main() {
+    Test();
+    //DoTheJob();
+    
 
 
 }

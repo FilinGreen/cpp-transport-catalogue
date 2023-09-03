@@ -5,13 +5,19 @@ JSONReader::JSONReader(const json::Node& data) :
 
 void JSONReader::LoadData() {
 	json::Node base_data = (data_.AsDict()).at("base_requests");
+	json::Node setting_data = (data_.AsDict()).at("routing_settings");
+
 
 	LoadStops(base_data);
-	LoadBuses(base_data);
+	LoadBuses(base_data, setting_data);
+
 }
+
 
 void JSONReader::ProcessQuery(std::ostream& out) {
 	json::Node requests_data = (data_.AsDict()).at("stat_requests");
+
+	TransportRouter transport_router (catalog_, bus_wait_time_, bus_velocity_);
 
 	json::Builder builder {};                                    //Обработчик вывода ответов
 	builder.StartArray();
@@ -24,6 +30,9 @@ void JSONReader::ProcessQuery(std::ostream& out) {
 		else if (((request.AsDict()).at("type")).AsString() == "Stop") {
 			ProcessStop(builder, request);
 		}
+		else if (((request.AsDict()).at("type")).AsString() == "Route") {
+			ProcessRoute(builder, request, transport_router);
+		}
 		else {
 			ProcessMap(builder, request);
 		}
@@ -32,6 +41,8 @@ void JSONReader::ProcessQuery(std::ostream& out) {
 	builder.EndArray();
 
 	json::Print(json::Document{std::move(builder.Build())}, out);                                 // Выводим ответы в поток вывода out
+	
+	
 }
 
 void JSONReader::LoadStops(const json::Node& base_data) {
@@ -47,7 +58,11 @@ void JSONReader::LoadStops(const json::Node& base_data) {
 	}
 }
 
-void JSONReader::LoadBuses(const json::Node& base_data) {
+void JSONReader::LoadBuses(const json::Node& base_data, const json::Node& setting_data) {
+
+	bus_wait_time_ = setting_data.AsDict().at("bus_wait_time").AsInt();
+	bus_velocity_ = setting_data.AsDict().at("bus_velocity").AsDouble();
+
 	for (json::Node stop_data : base_data.AsArray()) {                 //Пробегаем по контейнеру заполнения базы
 		auto mapa = stop_data.AsDict();
 		if (((mapa.at("type")).AsString()) == "Bus") {                 //Проверяем что элемент является маршрутом/автобусом
@@ -69,7 +84,7 @@ void JSONReader::LoadBuses(const json::Node& base_data) {
 
 			}//if
 
-			catalog_.AddBus((mapa.at("name")).AsString(), bus_stops, (mapa.at("is_roundtrip")).AsBool());   //Добавляем маршрут/автобус
+			catalog_.AddBus((mapa.at("name")).AsString(), bus_stops, (mapa.at("is_roundtrip")).AsBool(), bus_wait_time_, bus_velocity_);   //Добавляем маршрут/автобус
 		}
 	}
 }
@@ -91,10 +106,10 @@ void JSONReader::ProcessBus(json::Builder& builder, const json::Node& request) {
 	double geo_distance = 0.0;                                      // Общая географическая дистанция
 	int route_lenght = 0;                                           // Общая реальная дистанция
 	std::unordered_set <std::string_view> unique_stops;             // Сет уникальных остановок
-	Stop* prev_stop = catalog_.GetBus(bus_name).route.at(0);         // Предыдущая остановка
+	Stop* prev_stop = catalog_.GetBus(bus_name).route.at(0);        // Предыдущая остановка
 	bool flag = true;
 
-	for (auto& stop : catalog_.GetBus(bus_name).route) {             // Обработка маршрута
+	for (auto& stop : catalog_.GetBus(bus_name).route) {            // Обработка маршрута
 		unique_stops.insert((*stop).name);
 		if (flag) {
 			flag = false;
@@ -145,6 +160,14 @@ void JSONReader::ProcessStop(json::Builder& builder, const json::Node& request) 
 	builder.Key("buses").Value(sbuses);                                  // Добавлениеконтейнера маршрутов в файл ответа
 
 	builder.EndDict();
+}
+
+void JSONReader::ProcessRoute(json::Builder& builder, const json::Node& request, TransportRouter& transport_router) {
+
+	size_t from = catalog_.GetStop(((request.AsDict()).at("from")).AsString()).stop_id; //stop_id это id входной вершины
+	size_t to = catalog_.GetStop(((request.AsDict()).at("to")).AsString()).stop_id; //stop_id+1 это id выходной вершины
+
+	transport_router.ProcessRoute(builder, request, from, to);
 }
 
 renderer::SphereProjector JSONReader::SetProjector(TransportCatalogue& catalog, renderer::RenderSettings& settings) { // Задаем класс смещения
@@ -221,9 +244,9 @@ void JSONReader::ProcessMap(json::Builder& builder, const json::Node& request) {
 	renderer::RenderSettings settings = LoadSettings(data_);
 	renderer::SphereProjector proj = SetProjector(catalog_,settings);
 
-	std::ostringstream sout;                                  // Определение потока вывода
+	std::ostringstream sout;                                             // Определение потока вывода
 	MapRenderer maprender(data_);
-	maprender.Draw(catalog_, settings, sout, proj);                           // Отрисовка карты и вывод svg файла в поток вывода          
+	maprender.Draw(catalog_, settings, sout, proj);                      // Отрисовка карты и вывод svg файла в поток вывода          
    
 
 	builder.StartDict();

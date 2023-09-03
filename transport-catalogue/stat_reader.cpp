@@ -6,7 +6,7 @@ namespace Stats {
 		int queries_number = 0;
 		input >> queries_number;
 		std::string text;
-		std::getline(input, text);//По какой то причине после того как считываю гетлайном количество команд, следующий гетлайн идет пустой
+		std::getline(input, text);
 
 		for (int i = 0; i < queries_number; ++i) {
 			std::getline(input, text);
@@ -31,7 +31,7 @@ namespace Stats {
 		double distance = 0;                                                      // Общая географическая дистанция
 		double real_distance = 0;                                                 // Общая реальная длина
 		std::unordered_set <std::string_view> unique_stops;                       // Сет уникальных остановок
-		Stop* prev_stop = catalog.GetBus(name).route.at(0);    // Предыдущая остановка
+		Stop* prev_stop = catalog.GetBus(name).route.at(0);                       // Предыдущая остановка
 		bool flag = true;
 		for (auto& stop : catalog.GetBus(name).route) {
 			unique_stops.insert((*stop).name);
