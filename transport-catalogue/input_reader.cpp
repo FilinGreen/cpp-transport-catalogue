@@ -5,7 +5,7 @@ namespace Input {
 		int additions = 0;
 		input >> additions;
 		std::string text;
-		std::getline(input, text);//По какой то причине после того как считываю гетлайном количество команд, следующий гетлайн идет пустой
+		std::getline(input, text);
 		std::vector<std::string> stops;
 		std::vector<std::string> buses;
 		for (int i = 0; i < additions; ++i) {
